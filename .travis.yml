@@ -1,0 +1,25 @@
+sudo: required
+services:
+  - docker
+
+# do test builds for what needs to be tested
+before_install:
+  - docker build -t adear/react-test -f ./client/Dockerfile.dev ./client
+
+# run those tests
+script:
+  - docker run -e CI=true adear/react-test npm run test
+
+# do what is needed after the tests have been successfull eg in this case build the production versions of each image
+after_success:
+  - docker build -t adear/multi-client ./client
+  - docker build -t adear/multi-nginx ./nginx
+  - docker build -t adear/multi-server ./server
+  - docker build -t adear/multi-worker ./worker
+  # log into the docker cli - The first part of this echos the password and then passes that over to the stdin command that can then be used on the second part for the std-in and it tells docker thats where it can find that password
+  -  echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # take images and push them to dockerhub for elastic branstalk to later use
+  - docker push adear/multi-client
+  - docker push adear/multi-nginx
+  - docker push adear/multi-server
+  - docker push adear/multi-worker
