@@ -23,3 +23,16 @@ after_success:
   - docker push adear/multi-nginx
   - docker push adear/multi-server
   - docker push adear/multi-worker
+
+deploy:
+  provider: elasticbeanstalk
+  region: "eu-west-2"
+  app: "multi-docker"
+  env: "MultiDocker-env"
+  bucket_name: "elasticbeanstalk-eu-west-2-680970842204"
+  bucket_path: "docker-multi"
+  # this says only attempt this when we push to master
+  on:
+    branch: master
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
